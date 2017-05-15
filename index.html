@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <title>Hot or Cold?</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="apple-touch-icon" href="apple-touch-icon.png">
+        <!-- Place favicon.ico in the root directory -->
+        <link href="https://fonts.googleapis.com/css?family=Poiret+One" rel="stylesheet">
+
+        <link rel="stylesheet" href="css/normalize.css">
+        <link rel="stylesheet" href="css/main.css">
+        <script src="js/vendor/modernizr-2.8.3.min.js"></script>
+
+        <!-- P5  -->
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.8/p5.js"></script>
+		<script language="javascript" type="text/javascript" src="sketch.js"></script>
+
+		<!-- SOCKET.IO  -->
+		<script type="text/javascript" src="/socket.io/socket.io.js"></script>
+      
+
+	</head>
+
+
+    <body class="flex-container home">
+    	<section>
+            <h1>Welcome to Hot and Cold.</h1>
+            <h2>~ A Project for the Atlas Exposition ~</h2>
+            <h4>Walk Around and Watch Your Screen for Either Hot (RED) as You Get Closer or Cold (BLUE) as You Get Farther Away.</h4>
+            <p>Click the Button Below to Start Your Search</p>
+        </section>
+
+        <section>
+    		<button onclick="sendLocation()">Begin</button>
+        </section>
+
+        <script type="text/javascript">
+
+            var theDist;
+            
+            /// SOCKET STUFF
+            var socket = io.connect();
+            
+            socket.on('connect', function() {
+              console.log("Connected");
+            });
+
+            socket.on('dist', function (data) {
+                //receive teh distance from the server
+            	dist = data;
+                console.log("current distance: " + dist);
+            });
+
+        	var x = document.getElementById("demo");
+
+            var lat;
+            var lon;
+
+            //gets the location - when the page loads
+            navigator.geolocation.getCurrentPosition(function(position){
+                getLocation(position)
+            }, function(positionError){
+                console.log(positionError);
+            });
+
+            function getLocation(data){
+                lat = data.coords.latitude;
+                lon = data.coords.longitude;
+                console.log("lat: " + lat + ", lon: " + lon);
+            }
+
+        	function sendLocation() {
+                var dataToSend = {
+                    "lat": lat,
+                    "lon": lon
+                }
+                socket.emit('currentloc', dataToSend);
+        	}
+
+        	function showPosition(position) {
+        	    x.innerHTML = "Your Latitude: " + position.coords.latitude + 
+        	    "<br>Your Longitude: " + position.coords.longitude;
+        	}
+        </script>
+    </body>
+</html>
